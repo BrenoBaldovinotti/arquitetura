@@ -10,11 +10,12 @@
 	####################################################
 	
 .text
-main: 
+main:
 	jal get_option # Call procedure
 	move $s0, $v0 # Put returned value in "save" reg
 
 get_option:
+	
 	li $v0, 4 # string = 4
 	la $a0, TEXTO 
 	syscall
@@ -24,53 +25,70 @@ get_option:
 	syscall # value in $v0
 	
 	
-	bne $v0,1,opcao_2
+	bne $v0,1,opcao_6
 	# opcao 1 - cadastrar abastecimento
 	### chamar cadastrar abastecimento ####
+	
 	li $v0, 4
 	la $a0, TEXTO1 
 	syscall
+
+	jal cadastraAbastecimento
+
 	#######################################
-	j volta
+	
+	j get_option
+	
 opcao_2: # 2 - excluir abastecimento
+
 	bne $v0,2,opcao_3
 	##### chamar excluir abastecimento #####
 	li $v0, 4 
 	la $a0, TEXTO2 
 	syscall
 	#######################################
-	j volta
+	j get_option
+
 opcao_3: # 3 - exibir abastecimento
+
 	bne $v0,3,opcao_4
 	##### chamar exibir abastecimento #######
 	li $v0, 4 
 	la $a0, TEXTO3 
 	syscall
 	#######################################
-	j volta
+	j get_option
+
 opcao_4: # 4 - exibir consumo medio
 	bne $v0,4,opcao_5
+
 	##### chamar exibir consumo medio #######
 	li $v0, 4 
 	la $a0, TEXTO4 
 	syscall
 	#######################################
-	j volta
+	j get_option
+
 opcao_5: # 5 - exibir preco medio
+
 	bne $v0,5,opcao_6
 	##### chamar exibir preco medio #######
 	li $v0, 4 
 	la $a0, TEXTO5
 	syscall
 	#######################################
-	j volta
+
+	j get_option
+
 opcao_6: # 6 -  sai do programa
 	bne $v0,6,opcao_invalido
 	li $v0, 10  # end program = 10
-    	syscall
+    syscall
+
 opcao_invalido:
+
 	li $v0, 4 
 	la $a0, TEXTO_INVALIDO
 	syscall
-volta:	
-	jr $ra
+
+	j get_option
