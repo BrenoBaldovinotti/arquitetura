@@ -18,7 +18,7 @@ ABASTECIMENTO_COUNT: .word 0
 .eqv PRECO_OFFSET 36	# preço: 36
 # ======================================================
 
-MENU: .asciiz " 1 - Cadastrar Abastecimento\n Digite a opcao desejada: "
+MENU: .asciiz " 1 - Cadastrar Abastecimento\n 2 - Imprimir Abastecimentos\n Digite a opcao desejada: "
 TXT_INVALIDO: .asciiz "Opcao invalida!\n"
 PULA_LINHA: .asciiz "\n"  
 TXT_DIA: .asciiz "Dia: "
@@ -47,6 +47,9 @@ printaMenu:
 	li	$s1, 1 # colocar 1 em s1 para comparar se digitou opcao 1
 	beq	$s1, $s0, cadastraAbastecimentoPonte
 
+    li	$s1, 2 # colocar 2 em s1 para comparar se digitou opcao 2
+	beq	$s1, $s0, imprimirTudo
+
 	addi	$v0, $zero, 4 # para printar uma string colocar o codigo 4 em v0
 	la	$a0, TXT_INVALIDO # colocar o endereço da mensagem em a0
 	syscall 
@@ -57,11 +60,11 @@ cadastraAbastecimentoPonte: j cadastraAbastecimento
 ############################################################################
 
 cadastraAbastecimento:
-	la 	$t1, ABASTECIMENTOS # carrega endereço de ABASTECIMENTOS em t1
-	lw	$t0, ULTIMO_ABASTECIMENTO #valor 0~99
-	mul 	$t0, $t0, 40
-	add	$t1, $t1, $t0 #endereço real do ultimo abastecimento em $t1
-# $t1 contem endereço do abastecimento em si (FIXO)
+	la 	$t1, ABASTECIMENTOS         # carrega endereço de ABASTECIMENTOS em t1
+	lw	$t0, ULTIMO_ABASTECIMENTO   #valor 0~99
+	mul $t0, $t0, 40
+	add	$t1, $t1, $t0               #endereço real do ultimo abastecimento em $t1
+                                    # $t1 contem endereço do abastecimento em si (FIXO)
 
 	jal 	println
 
@@ -69,16 +72,11 @@ cadastraAbastecimento:
 	addi 	$v0, $zero, 4 
 	la 	$a0, TXT_DIA 
 	syscall
+
 	addi 	$v0, $zero, 5 # para receber um inteiro colocar codigo 5
 	syscall # value in $v0
-	sw 	$v0, DIA_OFFSET($t1)
-
-
-#<------------REMOVER------------>
-	lw	$a0, DIA_OFFSET($t1)	#carrega valor do teclado no $a0
-	li	$v0, 1 # get print integers
-	syscall 
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
+	
+    sw 	$v0, DIA_OFFSET($t1)
 
 #MES
 	addi 	$v0, $zero, 4 
@@ -88,12 +86,6 @@ cadastraAbastecimento:
 	syscall # value in $v0
 	sw 	$v0, MES_OFFSET($t1)
 
-#<------------REMOVER------------>
-	lw	$a0, MES_OFFSET($t1)	#carrega valor do teclado no $a0
-	li	$v0, 1 # get print integers
-	syscall 
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
-
 #ANO
 	addi 	$v0, $zero, 4 
 	la 	$a0, TXT_ANO 
@@ -101,12 +93,6 @@ cadastraAbastecimento:
 	addi 	$v0, $zero, 5 # para receber um inteiro colocar codigo 5
 	syscall # value in $v0
 	sw 	$v0, ANO_OFFSET($t1)
-
-#<------------REMOVER------------>
-	lw	$a0, ANO_OFFSET($t1)	#carrega valor do teclado no $a0
-	li	$v0, 1 # get print integers
-	syscall 
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
 
 #NOME
 	addi 	$v0, $zero, 4 
@@ -117,13 +103,6 @@ cadastraAbastecimento:
 	addi	$a1,$zero,16
 	syscall
 
-#<------------REMOVER------------>
-	la	$a0,NOME_OFFSET($t1)
-	li 	$v0, 4       # print string
-    	syscall
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
-
-
 #KM
 	addi 	$v0, $zero, 4 
 	la 	$a0, TXT_KM
@@ -131,12 +110,6 @@ cadastraAbastecimento:
 	addi 	$v0, $zero, 6 # para receber um float 6
 	syscall # value in $f0
 	s.s	$f0, KM_OFFSET($t1)
-
-#<------------REMOVER------------>
-	l.s	$f12, KM_OFFSET($t1)
-	li	$v0, 2 # get print float
-	syscall 
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
 
 #QUANTIDADE COMBUSTIVEL
 	addi 	$v0, $zero, 4 
@@ -146,12 +119,6 @@ cadastraAbastecimento:
 	syscall # value in $f0
 	s.s	$f0, LITRO_OFFSET($t1)
 
-#<------------REMOVER------------>
-	l.s	$f12, LITRO_OFFSET($t1)
-	li	$v0, 2 # get print float
-	syscall 
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
-
 #PRECO
 	addi 	$v0, $zero, 4 
 	la 	$a0, TXT_PRECO
@@ -160,21 +127,20 @@ cadastraAbastecimento:
 	syscall # value in $f0
 	s.s 	$f0, PRECO_OFFSET($t1)
 
-#<------------REMOVER------------>
-	l.s	$f12, PRECO_OFFSET($t1)
-	li	$v0, 2 # get print float
-	syscall 
-#<^^^^^^^^^^^^REMOVER^^^^^^^^^^^^>
-
 	jal println
 
 #ULTIMO_ABASTECIMENTO++
+
 	lw	$t0, ULTIMO_ABASTECIMENTO
 	addi	$t0, $t0, 1
 	sw 	$t0, ULTIMO_ABASTECIMENTO
+
 #ABASTECIMENTO_COUNT = ULTIMO_ABASTECIMENTO
 	sw 	$t0, ABASTECIMENTO_COUNT
-	j voltaMenu
+    
+    jal imprimirAbastecimento
+	
+    j voltaMenu
 
 ######################## VOLTA PARA O MENU #########################
 
@@ -183,7 +149,95 @@ voltaMenu:
 
 ############################### PRINTA NOVA LINHA #########################
 	println:
+    
 	addi	$v0, $zero, 4 
 	la	$a0, PULA_LINHA 
 	syscall
-	jr	$ra
+	
+    jr	$ra
+
+imprimirAbastecimento:
+    addi	$sp, $sp, -4			   # $sp = $sp - 4 configure offset
+    sw      $ra, 0($sp)                # save on stack
+    
+    #<------------DIA------------>
+	lw	    $a0, DIA_OFFSET($t1)	    #carrega valor do teclado no $a0
+	li	    $v0, 1                      # get print integers
+	syscall 
+    jal		println				        # jump to println and save position to $ra
+    
+    #<------------DIA------------>
+
+    #<------------MES------------>
+	lw	    $a0, MES_OFFSET($t1)	    #carrega valor do teclado no $a0
+	li	    $v0, 1                      # get print integers
+	syscall 
+    jal		println				        # jump to println and save position to $ra
+    #<^^^^^^^^^^^^MES^^^^^^^^^^^^>
+
+    #<------------ANO------------>
+	lw	    $a0, ANO_OFFSET($t1)	    #carrega valor do teclado no $a0
+	li	    $v0, 1                      # get print integers
+	syscall 
+    jal		println				        # jump to println and save position to $ra
+    #<^^^^^^^^^^^^ANO^^^^^^^^^^^^>
+
+    #<------------NOME------------>
+	la	    $a0,NOME_OFFSET($t1)
+	li 	    $v0, 4                      # print string
+    syscall
+    jal		println				        # jump to println and save position to $ra
+    #<^^^^^^^^^^^^NOME^^^^^^^^^^^^>
+
+    #<------------KM------------>
+	l.s	    $f12, KM_OFFSET($t1)
+	li	    $v0, 2                      # get print float
+	syscall 
+    jal		println				        # jump to println and save position to $ra
+    #<^^^^^^^^^^^^KM^^^^^^^^^^^^>
+
+    #<------------LITRO------------>
+	l.s	    $f12, LITRO_OFFSET($t1)
+	li	    $v0, 2                      # get print float
+	syscall 
+    jal		println				        # jump to println and save position to $ra
+    #<^^^^^^^^^^^^LITRO^^^^^^^^^^^^>
+
+    #<------------PRECO------------>
+	l.s	    $f12, PRECO_OFFSET($t1)
+	li	    $v0, 2                      # get print float
+	syscall 
+    jal		println				        # jump to println and save position to $ra'
+    #<------------PRECO------------>
+
+    #<------------ULTIMO_ABASTECIMENTO------------>
+	# lw	    $a0, ULTIMO_ABASTECIMENTO #valor 0~99
+	# li	    $v0, 1                              # get print integers
+	# syscall 
+    # jal		println	
+    #<------------ULTIMO_ABASTECIMENTO------------>
+
+    lw		$ra, 0($sp)		            # restore stack
+    jr		$ra					        # jump to $ra
+
+imprimirTudo:
+	lw	    $t0, ULTIMO_ABASTECIMENTO       # valor 0~99
+	la 	    $t1, ABASTECIMENTOS             # carrega endereço de ABASTECIMENTOS em t1
+    li		$t2, 0		                    # $t2 =0 
+    
+    addi	$a0, $t0, -1			        # $t0 = $t1 + 0
+    
+    loop:
+        move 	$a0, $t0		            # $a0 = t01
+        li	    $v0, 1                      # get print integers
+        syscall 
+        jal		println	
+
+        mul     $t2, $t2, 40
+        add	$t1, $t1, $t0
+
+	    bne	    $t0, $zero, loop
+    exit:
+        j		voltaMenu				    # jump to voltaMenu
+        # li      $v0, 10                   # terminate program run and
+        # syscall                           # Exit 
