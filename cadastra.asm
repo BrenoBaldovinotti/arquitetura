@@ -28,6 +28,7 @@ TXT_NOME: .asciiz "Nome do posto: "
 TXT_KM: .asciiz "Quilometragem: "
 TXT_COMBUSTIVEL: .asciiz "Quantidade de combustivel: "
 TXT_PRECO: .asciiz "Preco: "
+DIVISOR: .asciiz "##########################################"
 
 .text
 .globl main 
@@ -35,23 +36,27 @@ TXT_PRECO: .asciiz "Preco: "
 main: 
 
 printaMenu:
+    addi 	    $v0, $zero, 4 
+	la 	        $a0, DIVISOR 
+	syscall
+    
 	jal	        println
-	addi	    $v0, $zero, 4 # para printar uma string colocar o codigo 4 em v0
-	la	        $a0, MENU # colocar o endereco da mensagem em a0
+	addi	    $v0, $zero, 4               # para printar uma string colocar o codigo 4 em v0
+	la	        $a0, MENU                   # colocar o endereco da mensagem em a0
 	syscall 
 
-	addi	    $v0, $zero, 5 # para receber um inteiro colocar codigo 5
+	addi	    $v0, $zero, 5               # para receber um inteiro colocar codigo 5
 	syscall
-	addi	    $s0, $v0, 0  # o inteiro digitado fica salvo em v0 guardar em s0
+	addi	    $s0, $v0, 0                 # o inteiro digitado fica salvo em v0 guardar em s0
 
-	li	        $s1, 1 # colocar 1 em s1 para comparar se digitou opcao 1
+	li	        $s1, 1 #                    colocar 1 em s1 para comparar se digitou opcao 1
 	beq	        $s1, $s0, cadastraAbastecimentoPonte
 
-    li	        $s1, 2 # colocar 2 em s1 para comparar se digitou opcao 2
+    li	        $s1, 2 #                    colocar 2 em s1 para comparar se digitou opcao 2
 	beq	        $s1, $s0, imprimirTudo
 
-	addi	    $v0, $zero, 4 # para printar uma string colocar o codigo 4 em v0
-	la	        $a0, TXT_INVALIDO # colocar o endereço da mensagem em a0
+	addi	    $v0, $zero, 4               # para printar uma string colocar o codigo 4 em v0
+	la	        $a0, TXT_INVALIDO           # colocar o endereço da mensagem em a0
 	syscall 
 	j	        voltaMenu
 
@@ -60,11 +65,15 @@ cadastraAbastecimentoPonte: j cadastraAbastecimento
 ############################################################################
 
 cadastraAbastecimento:
+    addi 	    $v0, $zero, 4 
+	la 	        $a0, DIVISOR 
+	syscall
+
 	la 	        $t1, ABASTECIMENTOS         # carrega endereço de ABASTECIMENTOS em t1
 	lw	        $t0, ULTIMO_ABASTECIMENTO   #valor 0~99
 	mul         $t0, $t0, 40
 	add	        $t1, $t1, $t0               #endereço real do ultimo abastecimento em $t1
-                                    # $t1 contem endereço do abastecimento em si (FIXO)
+                                            # $t1 contem endereço do abastecimento em si (FIXO)
 
 	jal 	println
 
@@ -73,8 +82,8 @@ cadastraAbastecimento:
 	la 	        $a0, TXT_DIA 
 	syscall
 
-	addi 	    $v0, $zero, 5 # para receber um inteiro colocar codigo 5
-	syscall # value in $v0
+	addi 	    $v0, $zero, 5               # para receber um inteiro colocar codigo 5
+	syscall                                 # value in $v0
 	
     sw 	        $v0, DIA_OFFSET($t1)
 
@@ -83,8 +92,8 @@ cadastraAbastecimento:
 	la 	        $a0, TXT_MES
 	syscall
 
-	addi 	    $v0, $zero, 5   # para receber um inteiro colocar codigo 5
-	syscall # value in $v0
+	addi 	    $v0, $zero, 5               # para receber um inteiro colocar codigo 5
+	syscall                                 # value in $v0
 	sw 	        $v0, MES_OFFSET($t1)
 
 #ANO
@@ -92,8 +101,8 @@ cadastraAbastecimento:
 	la 	        $a0, TXT_ANO 
 	syscall
 
-	addi 	    $v0, $zero, 5   # para receber um inteiro colocar codigo 5
-	syscall                     # value in $v0
+	addi 	    $v0, $zero, 5               # para receber um inteiro colocar codigo 5
+	syscall                                 # value in $v0
 	sw 	        $v0, ANO_OFFSET($t1)
 
 #NOME
@@ -111,8 +120,8 @@ cadastraAbastecimento:
 	la 	        $a0, TXT_KM
 	syscall
 
-	addi 	    $v0, $zero, 6   # para receber um float 6
-	syscall                     # value in $f0
+	addi 	    $v0, $zero, 6               # para receber um float 6
+	syscall                                 # value in $f0
 	s.s	        $f0, KM_OFFSET($t1)
 
 #QUANTIDADE COMBUSTIVEL
@@ -120,8 +129,8 @@ cadastraAbastecimento:
 	la 	        $a0, TXT_COMBUSTIVEL
 	syscall
 
-	addi 	    $v0, $zero, 6   # para receber um float 6
-	syscall                     # value in $f0
+	addi 	    $v0, $zero, 6               # para receber um float 6
+	syscall                                 # value in $f0
 	s.s	        $f0, LITRO_OFFSET($t1)
 
 #PRECO
@@ -129,8 +138,8 @@ cadastraAbastecimento:
 	la 	        $a0, TXT_PRECO
 	syscall
 
-	addi 	    $v0, $zero, 6 # para receber um float 6
-	syscall # value in $f0
+	addi 	    $v0, $zero, 6               # para receber um float 6
+	syscall                                 # value in $f0
 	s.s 	    $f0, PRECO_OFFSET($t1)
 
 	jal println
@@ -161,9 +170,15 @@ voltaMenu:
     jr	        $ra
 
 imprimirAbastecimento:
+    addi 	    $v0, $zero, 4 
+	la 	        $a0, DIVISOR 
+	syscall
+
     addi	    $sp, $sp, -4			   # $sp = $sp - 4 configure offset
     sw          $ra, 0($sp)                # save on stack
-    
+
+	jal	        println
+
     #<------------DIA------------>
     addi 	    $v0, $zero, 4 
 	la 	        $a0, TXT_DIA 
@@ -256,13 +271,13 @@ imprimirTudo:
         jal		    imprimirAbastecimento	
         
         addi	    $t1, $t1, 40
-        add		    $a0, $t1, $zero		# $a0 = $t1 +zerot2
+        add		    $a0, $t1, $zero		        # $a0 = $t1 +zerot2
 
-        addi	    $t2, $t2, 1			# $t2 = $t2 + 1
+        addi	    $t2, $t2, 1			        # $t2 = $t2 + 1
 
-        beq		    $t0, $t2, exit	# if $t0 == $t1 then target
+        beq		    $t0, $t2, exit	            # if $t0 == $t1 then target
         jal		    println				        # jump to println and save position to $ra'
-        j		    loop				# jump to target        
+        j		    loop				        # jump to target        
 
     exit:
         j		    voltaMenu				    # jump to voltaMenu
